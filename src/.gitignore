@@ -3,3 +3,4 @@ parser
 *.o
 *.zst
 .vscode/
+*:Zone.Identifier
