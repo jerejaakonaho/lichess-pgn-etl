@@ -1,22 +1,44 @@
+# Compiler Settings
 CXX = g++
+CXXFLAGS = -O3 -march=native -Wall -Werror -std=c++17 -I.. -pthread
+LDFLAGS = -lsqlite3 -pthread
 
-CXXFLAGS = -O3 -march=native -Wall -std=c++17
+# GTest linker flags
+GTEST_LDFLAGS = -lgtest -lgtest_main -pthread
 
-LDFLAGS = -lsqlite3
-
+# Targets
 TARGET = parser
+TEST_TARGET = run_tests
 
-SRCS = main.cpp chess_parser.cpp database.cpp
+# Core application files (everything except main.cpp)
+APP_SRCS = chess_parser.cpp database.cpp app.cpp
+APP_OBJS = $(APP_SRCS:.cpp=.o)
 
-OBJS = $(SRCS:.cpp=.o)
+# Main entry point for the real app
+MAIN_SRC = main.cpp
+MAIN_OBJ = $(MAIN_SRC:.cpp=.o)
 
+# Test files
+TEST_SRC = test.cpp
+TEST_OBJ = $(TEST_SRC:.cpp=.o)
+
+# Rules
 all: $(TARGET)
 
-$(TARGET) : $(OBJS)
-		$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS)
+# Main
+$(TARGET) : $(APP_OBJS) $(MAIN_OBJ)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(APP_OBJS) $(MAIN_OBJ) $(LDFLAGS)
 
+# Build and run tests
+test: $(TEST_TARGET)
+		./$(TEST_TARGET)
+
+$(TEST_TARGET): $(APP_OBJS) $(TEST_OBJ)
+		$(CXX) $(CXXFLAGS) -o $(TEST_TARGET) $(APP_OBJS) $(TEST_OBJ) $(LDFLAGS) $(GTEST_LDFLAGS)
+
+# Compile cpp to .o
 %.o: %.cpp
-		$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-		rm -f $(OBJS) $(TARGET)
+	rm -f $(APP_OBJS) $(MAIN_OBJ) $(TEST_OBJ) $(TARGET) $(TEST_TARGET)

@@ -1,36 +1,25 @@
 #include <iostream>
 #include <chrono>
-#include "chess_parser.hpp"
-#include "database.hpp"
+#include "app.hpp"
 
 int main() {
-    std::string line;
-    int games_found = 0;
+    try {
+        int number_of_threads = 4;
 
-    PgnParser parser;
-    Database db("chess_data.db");
+        App app("chess_data.db", number_of_threads);
 
-    std::cout << "Waiting for data" << std::endl;
-    auto start = std::chrono::high_resolution_clock::now();
+        auto start_time = std::chrono::high_resolution_clock::now();
+        app.run();
 
-    while (std::getline(std::cin, line)) {
-        // parse line to hashes
-        std::vector<uint64_t>& hashes = parser.parse_line_to_hashes(line);
-        if (hashes.empty()) continue;
+        auto end_time = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> duration = end_time - start_time;
+        std::cout << "Time: " << duration.count() << " seconds" << std::endl;
         
-        // send hashes to db
-        db.insert_hashes(hashes);
-
-        games_found++;
-
-        if (games_found % 50000 == 0) {
-            std::cout << "Käsitelty " << games_found << " peliä..." << std::endl;
-        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-
-    std::cout << "Processed " << games_found << " games in " << time << " ms" << std::endl;
+    std::cout << "Program executed succesfully. Closing..." << std::endl;
     return 0;
 }

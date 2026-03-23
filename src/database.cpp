@@ -9,14 +9,16 @@ Database::Database(const std::string& db_name) {
 
     create_table();
 
-    // SQL command, ? replaced with hash later
-    const char* sql = "INSERT INTO positions (hash) VALUES (?);";
+    // SQL command
+    const char* sql = "INSERT INTO positions (fen, count) VALUES (?, ?) "
+                  "ON CONFLICT(fen) DO UPDATE SET count = count + excluded.count;";
     sqlite3_prepare_v2(db, sql, -1, &insert_statement, nullptr);
 
-    sqlite3_exec(db, "PRAGMA synchronous = OFF;", nullptr, nullptr, nullptr);
-    sqlite3_exec(db, "PRAGMA journal_mode = MEMORY;", nullptr, nullptr, nullptr);
-
-    buffer.reserve(100000);
+    sqlite3_exec(db, "PRAGMA synchronous = NORMAL;", nullptr, nullptr, nullptr);
+    sqlite3_exec(db, "PRAGMA journal_mode = WAL;", nullptr, nullptr, nullptr);
+    sqlite3_exec(db, "PRAGMA cache_size = -2000000;", nullptr, nullptr, nullptr); // 2 Gt välimuistia
+    sqlite3_exec(db, "PRAGMA mmap_size = 30000000000;", nullptr, nullptr, nullptr); // Memory mapping
+    buffer.reserve(900000);
 }
 
 Database::~Database() {
@@ -26,19 +28,26 @@ Database::~Database() {
 }
 
 void Database::create_table() {
-    const char* sql = "CREATE TABLE IF NOT EXISTS positions (hash BIGINT);";
+    const char* sql = "CREATE TABLE IF NOT EXISTS positions (fen TEXT PRIMARY KEY, count INT DEFAULT 1);";
     sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
 }
 
-void Database::insert_hashes(const std::vector<uint64_t>& hashes) {
+void Database::insert_fens(const std::unordered_map<std::string, int>& fen_counts) {
+    if (fen_counts.empty()) return;
+    
+    sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
     // move game hashes to db buffer
-    for (uint64_t h : hashes) {
-        buffer.push_back(h);
+    for (const auto& pair : fen_counts) {
+        sqlite3_bind_text(insert_statement, 1, pair.first.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(insert_statement, 2, pair.second);
+        
+        sqlite3_step(insert_statement);
+        sqlite3_reset(insert_statement);
     }
-
-    if (buffer.size() >= 100000) {
+    if (buffer.size() >= 900000) {
         flush();
     }
+    sqlite3_exec(db, "COMMIT;", nullptr, nullptr, nullptr);
 }
 
 void Database::flush() {
@@ -46,9 +55,8 @@ void Database::flush() {
 
     sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
 
-    for (uint64_t h : buffer) {
-        // replace ? with hash
-        sqlite3_bind_int64(insert_statement, 1, h);
+    for (const std::string& fen : buffer) {
+        sqlite3_bind_text(insert_statement, 1, fen.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_step(insert_statement); // execute
         sqlite3_reset(insert_statement); // reset for next hash
     }

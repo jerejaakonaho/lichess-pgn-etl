@@ -3,7 +3,7 @@
 PgnParser::PgnParser() {
     cleaned_buffer.reserve(4096);
     moves_view_buffer.reserve(256);
-    hashes_buffer.reserve(256);
+    fen_buffer.reserve(256);
 }
 
 bool PgnParser::is_valid_move_line(const std::string& line) {
@@ -65,14 +65,27 @@ void PgnParser::extract_moves() {
     }
 }
 
-std::vector<uint64_t>& PgnParser::parse_line_to_hashes(const std::string& line) {
-    hashes_buffer.clear();
-    if (!is_valid_move_line(line)) return hashes_buffer;
+std::string PgnParser::get_stripped_fen(const std::string& full_fen) {
+    int spaces = 0;
+    for (size_t i = 0; i < full_fen.length(); ++i) {
+        if (full_fen[i] == ' ') {
+            spaces++;
+            if (spaces == 4) {
+                return full_fen.substr(0, i);
+            }
+        }
+    }
+    return full_fen;
+}
+
+std::vector<std::string>& PgnParser::parse_line_to_fens(const std::string& line) {
+    fen_buffer.clear();
+    if (!is_valid_move_line(line)) return fen_buffer;
     
     clean_move_line(line);
     extract_moves();
 
-    if (moves_view_buffer.empty()) return hashes_buffer;
+    if (moves_view_buffer.empty()) return fen_buffer;
 
     board.setFen(chess::constants::STARTPOS);
 
@@ -80,10 +93,16 @@ std::vector<uint64_t>& PgnParser::parse_line_to_hashes(const std::string& line) 
         try {
             auto move = chess::uci::parseSan(board, move_view);
             board.makeMove(move);
-            hashes_buffer.push_back(board.hash());
+
+            std::string full_fen = board.getFen();
+            
+            std::string stripped_fen = get_stripped_fen(full_fen);
+
+            fen_buffer.push_back(stripped_fen);
+
         } catch (...) {
             break;
         }
     }
-    return hashes_buffer;
+    return fen_buffer;
 }
