@@ -1,4 +1,4 @@
-# Compiler Settings
+# Compiler Settings -O3 -march=native
 CXX = g++
 CXXFLAGS = -O3 -march=native -Wall -Werror -std=c++17 -I.. -pthread
 LDFLAGS = -lsqlite3 -pthread

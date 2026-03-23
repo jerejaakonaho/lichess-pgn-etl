@@ -7,6 +7,7 @@ void App::reader_task() {
 
     std::string line;
     int games_read = 0;
+    auto start_time = std::chrono::steady_clock::now();
     // zstd -> std::cin as long as there is new data
     while (std::getline(std::cin, line)) {
         batch.push_back(line);
@@ -19,7 +20,10 @@ void App::reader_task() {
             batch.reserve(5000);
 
             if (games_read % 100000 == 0) {
-                std::cout << "-> Reader: Pushed " << games_read << " games to memory..." << std::endl;
+                auto push_time = std::chrono::steady_clock::now();
+                auto duration = push_time - start_time;
+                auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count(); 
+                std::cout << "-> Reader: Pushed " << games_read << " games to memory in " << seconds << " seconds." <<std::endl;
             }
         }
     }
@@ -27,7 +31,6 @@ void App::reader_task() {
     if (!batch.empty()) {
         task_queue.push(std::move(batch));
     }
-
     task_queue.set_done();
 }
 
@@ -57,20 +60,26 @@ void App::worker_task() {
 void App::db_task() {
     std::unordered_map<std::string, int> fen_batch;
     uint64_t fens_saved = 0;
-    uint64_t next_print = 1000000;
+    uint64_t current_buffer = 0;
+    uint64_t milestone = 1000000;
+
+    db.begin_transaction();
 
     while (db_queue.pop(fen_batch)) {
-        if (fen_batch.empty()) continue;
-
         db.insert_fens(fen_batch);
-
         fens_saved += fen_batch.size();
-
-        if (fens_saved >= next_print) {
-            std::cout << "<- Database: " << fens_saved << " FENs saved to database" << std::endl;
-            next_print += 1000000; // Seuraava tulostus taas miljoonan päästä
+        current_buffer += fen_batch.size();
+        if (current_buffer > 50000) {
+            db.commit_transaction();
+            db.begin_transaction();
+            current_buffer = 0;
+        }
+        if (fens_saved >= milestone) {
+            milestone += 1000000;
+            std::cout << "Saved " << fens_saved << " fens to the database" << std::endl;
         }
     }
+    db.commit_transaction();
 }
 
 void App::run() {

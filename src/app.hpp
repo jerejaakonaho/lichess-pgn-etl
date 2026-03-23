@@ -6,12 +6,13 @@
 #include "safe_queue.hpp"
 #include "database.hpp"
 #include "chess_parser.hpp"
+#include <chrono>
 
 class App {
 FRIEND_TEST(AppTest, TestWorkerTask);
 private:
-    SafeQueue<std::vector<std::string>> task_queue;
-    SafeQueue<std::unordered_map<std::string, int>> db_queue;
+    SafeQueue<std::vector<std::string>> task_queue{50};
+    SafeQueue<std::unordered_map<std::string, int>> db_queue{10};
     Database db;
     // How many threads to allocate to the program.
     int number_of_threads = 4;

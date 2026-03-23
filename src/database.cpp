@@ -17,7 +17,7 @@ Database::Database(const std::string& db_name) {
     sqlite3_exec(db, "PRAGMA synchronous = NORMAL;", nullptr, nullptr, nullptr);
     sqlite3_exec(db, "PRAGMA journal_mode = WAL;", nullptr, nullptr, nullptr);
     sqlite3_exec(db, "PRAGMA cache_size = -2000000;", nullptr, nullptr, nullptr); // 2 Gt välimuistia
-    sqlite3_exec(db, "PRAGMA mmap_size = 30000000000;", nullptr, nullptr, nullptr); // Memory mapping
+    sqlite3_exec(db, "PRAGMA mmap_size = 0;", nullptr, nullptr, nullptr); // Memory mapping
     buffer.reserve(900000);
 }
 
@@ -32,21 +32,21 @@ void Database::create_table() {
     sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
 }
 
-void Database::insert_fens(const std::unordered_map<std::string, int>& fen_counts) {
-    if (fen_counts.empty()) return;
-    
+void Database::begin_transaction() {
     sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
-    // move game hashes to db buffer
-    for (const auto& pair : fen_counts) {
+}
+
+void Database::insert_fens(const std::unordered_map<std::string, int>& fen_batch) {
+    for (const auto& pair : fen_batch) {
         sqlite3_bind_text(insert_statement, 1, pair.first.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_int(insert_statement, 2, pair.second);
         
         sqlite3_step(insert_statement);
         sqlite3_reset(insert_statement);
     }
-    if (buffer.size() >= 900000) {
-        flush();
-    }
+}
+
+void Database::commit_transaction() {
     sqlite3_exec(db, "COMMIT;", nullptr, nullptr, nullptr);
 }
 
