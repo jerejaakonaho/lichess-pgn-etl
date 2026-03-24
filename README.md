@@ -1,4 +1,4 @@
-# ♟️ Lichess Data Engine
+# ♟️ Lichess Data Pipeline
 
 ## Project Overview
 This project is a high-performance, C++ based program designed to process massive datasets from the [Lichess database](https://database.lichess.org/). The engine streams raw `.pgn.zst` files and converts game moves into **FEN (Forsyth–Edwards Notation)** strings, storing the resulting board states in a structured SQLite database.
