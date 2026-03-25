@@ -10,7 +10,7 @@ This project is a high-performance, C++ based program that uses .pgn.zst files f
 
 The core of the application is a multi-stage processing pipeline, visualized below:
 
-![Data processing](../assets/image.png)
+![Data processing](./assets/image.png)
 
 1. **Extraction:** Extract only the moves from the raw PGN data utilizing methods `is_valid_move_line` and `clean_move_line`.
 2. **Transformation:** Converts text-based moves into an `std::vector<std::string_view>` format, avoiding unnecessary string allocations.
