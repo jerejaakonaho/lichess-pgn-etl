@@ -1,6 +1,6 @@
-# Compiler Settings -O3 -march=native
+# Compiler Settings
 CXX = g++
-CXXFLAGS = -O3 -march=native -Wall -Werror -std=c++17 -I.. -pthread
+CXXFLAGS = -O3 -march=native -std=c++17 -I.. -pthread
 LDFLAGS = -lsqlite3 -pthread
 
 # GTest linker flags

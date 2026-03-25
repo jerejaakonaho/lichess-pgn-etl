@@ -10,7 +10,7 @@ public:
     Database(const std::string& db_name);
     ~Database();
     void begin_transaction();
-    void insert_fens(const std::unordered_map<std::string, int>& fen_batch);
+    void insert_fens(const std::vector<std::pair<std::string, int>>& fen_batch);
     void commit_transaction();
     void flush();
 private:

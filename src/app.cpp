@@ -23,7 +23,7 @@ void App::reader_task() {
                 auto push_time = std::chrono::steady_clock::now();
                 auto duration = push_time - start_time;
                 auto seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count(); 
-                std::cout << "-> Reader: Pushed " << games_read << " games to memory in " << seconds << " seconds." <<std::endl;
+                std::cout << "-> Reader: Pushed " << games_read << " lines to memory in " << seconds << " seconds." <<std::endl;
             }
         }
     }
@@ -51,14 +51,17 @@ void App::worker_task() {
                 fen_counts[fen]++;
             }
         }
+        // Make the unordered map a vector, caused problems previously
+        // Multithreading weirdness, memory didn't free properly on worker threads
+        // because the data was moved to db_task and it freed the memory.
+        std::vector<std::pair<std::string, int>> flat_counts(fen_counts.begin(), fen_counts.end());
 
-        // push ready FENs to db_queue
-        db_queue.push(std::move(fen_counts));
+        db_queue.push(std::move(flat_counts));
     }
 }
 
 void App::db_task() {
-    std::unordered_map<std::string, int> fen_batch;
+    std::vector<std::pair<std::string, int>> fen_batch;
     uint64_t fens_saved = 0;
     uint64_t current_buffer = 0;
     uint64_t milestone = 1000000;

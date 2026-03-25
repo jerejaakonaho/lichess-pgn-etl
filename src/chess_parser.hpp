@@ -42,5 +42,5 @@ private:
      */
     void extract_moves();
 
-    std::string get_stripped_fen(const std::string& full_fen);
+    void get_stripped_fen(std::string& full_fen);
 };

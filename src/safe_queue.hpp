@@ -15,7 +15,7 @@ private:
 
 public:
     // push new packet to queue and wake 1 thread
-    SafeQueue(size_t max_size = 200) : max_size(max_size) {}
+    SafeQueue(size_t max_size = 50) : max_size(max_size) {}
 
     void push(T item) {
     std::unique_lock<std::mutex> lock(mtx);

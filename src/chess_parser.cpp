@@ -65,17 +65,18 @@ void PgnParser::extract_moves() {
     }
 }
 
-std::string PgnParser::get_stripped_fen(const std::string& full_fen) {
+void PgnParser::get_stripped_fen(std::string& full_fen) {
     int spaces = 0;
     for (size_t i = 0; i < full_fen.length(); ++i) {
         if (full_fen[i] == ' ') {
             spaces++;
             if (spaces == 4) {
-                return full_fen.substr(0, i);
+                full_fen.resize(i);
+                return;
             }
         }
     }
-    return full_fen;
+    return;
 }
 
 std::vector<std::string>& PgnParser::parse_line_to_fens(const std::string& line) {
@@ -95,10 +96,10 @@ std::vector<std::string>& PgnParser::parse_line_to_fens(const std::string& line)
             board.makeMove(move);
 
             std::string full_fen = board.getFen();
-            
-            std::string stripped_fen = get_stripped_fen(full_fen);
 
-            fen_buffer.push_back(stripped_fen);
+            get_stripped_fen(full_fen);
+            
+            fen_buffer.push_back(std::move(full_fen));
 
         } catch (...) {
             break;

@@ -14,10 +14,10 @@ Database::Database(const std::string& db_name) {
                   "ON CONFLICT(fen) DO UPDATE SET count = count + excluded.count;";
     sqlite3_prepare_v2(db, sql, -1, &insert_statement, nullptr);
 
-    sqlite3_exec(db, "PRAGMA synchronous = NORMAL;", nullptr, nullptr, nullptr);
+    sqlite3_exec(db, "PRAGMA synchronous = OFF;", nullptr, nullptr, nullptr);
     sqlite3_exec(db, "PRAGMA journal_mode = WAL;", nullptr, nullptr, nullptr);
-    sqlite3_exec(db, "PRAGMA cache_size = -2000000;", nullptr, nullptr, nullptr); // 2 Gt välimuistia
-    sqlite3_exec(db, "PRAGMA mmap_size = 0;", nullptr, nullptr, nullptr); // Memory mapping
+    sqlite3_exec(db, "PRAGMA cache_size = -200000;", nullptr, nullptr, nullptr); // 2 Gt välimuistia
+    sqlite3_exec(db, "PRAGMA mmap_size = -2000000;", nullptr, nullptr, nullptr); // Memory mapping
     buffer.reserve(900000);
 }
 
@@ -36,9 +36,9 @@ void Database::begin_transaction() {
     sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
 }
 
-void Database::insert_fens(const std::unordered_map<std::string, int>& fen_batch) {
+void Database::insert_fens(const std::vector<std::pair<std::string, int>>& fen_batch) {
     for (const auto& pair : fen_batch) {
-        sqlite3_bind_text(insert_statement, 1, pair.first.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(insert_statement, 1, pair.first.c_str(), -1, SQLITE_STATIC);
         sqlite3_bind_int(insert_statement, 2, pair.second);
         
         sqlite3_step(insert_statement);

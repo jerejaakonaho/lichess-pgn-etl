@@ -4,7 +4,7 @@
 
 int main() {
     try {
-        int number_of_threads = 4;
+        int number_of_threads = 5;
 
         App app("chess_data.db", number_of_threads);
 
