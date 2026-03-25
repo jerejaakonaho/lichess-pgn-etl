@@ -45,8 +45,17 @@ To run the pipeline, you need:
 
 ## Usage
 
+## Usage
 ### 1. Compiling
-The program is built using the provided Makefile:
+The program is built using the Makefile:
 
 ```bash
 make
+```
+
+### 2. Running
+Stream data directly from a compressed `.zst` file without extracting it to your hard drive:
+
+```bash
+zstd -dc lichess_db.zst | ./parser
+```
