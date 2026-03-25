@@ -3,7 +3,7 @@
 This project is a high-performance, C++ based program that uses .pgn.zst files from Lichess database (https://database.lichess.org/). The program streams the raw PGN data and converts it into board positions in FEN format and stores them in a SQLite database.
 
 ## Tech stack
-* **Modern C++** Written in C++17, utilising std::string_view for example.
+* **Modern C++** Written in C++17.
 * **SQLite** Used SQLite for the database as the goal wasn't to make a product out of this.
 
 ## Architecture and data flow
