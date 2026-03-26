@@ -1,6 +1,6 @@
 # ♟️ Lichess Data Engine
 ## Project overview
-This project is a high-performance, C++ based program that uses .pgn.zst files from Lichess database (https://database.lichess.org/). The program streams the raw PGN data and converts it into board positions in FEN format and stores them in a SQLite database.
+This project is a high-performance, C++ based program that uses .pgn.zst files from Lichess database (https://database.lichess.org/). The program streams the raw PGN data and converts it into board positions in FEN format and also keeps track of how many times the FEN has appeared (count) and stores them in a SQLite database.
 
 ## Tech stack
 * **Modern C++** Written in C++17.
