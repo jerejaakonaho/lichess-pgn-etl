@@ -18,7 +18,8 @@ The core of the application is a multi-stage processing pipeline, visualized bel
 
 ## Performance
 This engine is optimized to handle hundreds of gigabytes of data without creating any temporary files on the disk.
-~97 654 FEN/s uploaded to SQLite.
+I benchmarked
+~97 654 FEN/s uploaded to SQLite, using 5 threads (1 reader, 3 workers, 1 db). Adding more workers is unnecessary since the reading is a bottleneck.
 
 ## Dependencies & prerequisites
 To run the pipeline, you need:
