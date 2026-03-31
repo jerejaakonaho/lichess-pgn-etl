@@ -8,13 +8,11 @@ This project is a high-performance, C++ based program that uses .pgn.zst files f
 
 ## Architecture and data flow
 
-The core of the application is a multi-stage processing pipeline, visualized below:
-
-![Data processing](./assets/image.png)
+The core of the application is a multi-stage processing pipeline.
 
 1. **Extraction:** reader_task streams the lines from a .zst file to worker_queue.
-2. **Transformation:** worker_task checks if the line is a valid game line, (filters out header lines) and places the sanitized lines in the db_queue.
-4. **Loading:** Saves the FEN strings (and counts) into an SQLite database.
+2. **Transformation:** worker_task checks if the line is a valid game line, and keeps count of duplicates to save space. It then places the clean data in the db_queue.
+4. **Loading:** Saves the FEN strings and counts into an SQLite database.
 
 ## Performance
 This engine is optimized to handle hundreds of gigabytes of data without creating any temporary files on the disk.
