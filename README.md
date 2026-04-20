@@ -16,8 +16,8 @@ The core of the application is a multi-stage processing pipeline.
 4. **Loading:** Saves the FEN strings and counts into an SQLite database.
 
 ## Areas of feedback
-1. ** Concurrency and SQL ** Im studying these still, I utilized LLMs for these parts of the project, but feedback on the architecture would be appreciated for the reader-worker-db task flow.
-2. ** Parser ** If there are any red flags in the chess_parser, since this I wrote myself. It is fast enough because the bottleneck right now is the data streaming (workers finish job faster than they get new data) but optimizing further would be atleast fun.
+1. **Concurrency and SQL** Im studying these still, I utilized LLMs for these parts of the project, but feedback on the architecture would be appreciated for the reader-worker-db task flow.
+2. **Parser** If there are any red flags in the chess_parser, since this I wrote myself. It is fast enough because the bottleneck right now is the data streaming (workers finish job faster than they get new data) but optimizing further would be atleast fun.
 
 ## Performance
 This engine is optimized to handle hundreds of gigabytes of data without creating any temporary files on the disk.
