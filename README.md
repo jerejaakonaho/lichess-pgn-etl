@@ -14,14 +14,6 @@ The core of the application is a multi-stage processing pipeline.
 1. **Extraction:** reader_task streams the lines from a .zst file to worker_queue.
 2. **Transformation:** worker_task checks if the line is a valid game line, and keeps count of duplicates to save space. It then places the clean data in the db_queue.
 4. **Loading:** Saves the FEN strings and counts into an SQLite database.
-=======
-![Data processing](./assets/image.png)
-
-1. **Extraction:** Extract only the moves from the raw PGN data utilizing methods `is_valid_move_line` and `clean_move_line`.
-2. **Transformation:** Converts text-based moves into an `std::vector<std::string_view>` format, avoiding unnecessary string allocations.
-3. **FEN Generation:** Generates a **FEN string** (Forsyth-Edwards Notation) for each board position based on the exact state of the chessboard.
-4. **Loading:** Saves the FEN strings into an SQLite database.
-
 
 ## Performance
 This engine is optimized to handle hundreds of gigabytes of data without creating any temporary files on the disk.
